@@ -1,6 +1,6 @@
 {
-  "name": "erp",
-  "version": "0.1.0",
+  "name": "Nafasi",
+  "version": "V0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

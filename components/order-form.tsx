@@ -41,11 +41,52 @@ const customerSuggestions: Suggestion[] = [
   { name: 'Uruma', type: 'customer' },
 ];
 const productSuggestions: Suggestion[] = [
+  { name: '9070', type: 'model' },
+  { name: '9078', type: 'model' },
+  { name: '9080', type: 'model' },
+  { name: '9082', type: 'model' },
+  { name: '9086', type: 'model' },
+  { name: '9092', type: 'model' },
+  { name: '9093', type: 'model' },
+  { name: '9099', type: 'model' },
+  { name: '9100', type: 'model' },
+  { name: '9101', type: 'model' },
+  { name: '9102', type: 'model' },
+  { name: '9103', type: 'model' },
+  { name: '9105', type: 'model' },
+  { name: '9106', type: 'model' },
+  { name: '9111', type: 'model' },
+  { name: '9801', type: 'model' },
+  { name: '9803', type: 'model' },
+  { name: '9804', type: 'model' },
+  { name: '9805', type: 'model' },
+  { name: '9806', type: 'model' },
   { name: '9807', type: 'model' },
   { name: '9808', type: 'model' },
+  { name: '9809', type: 'model' },
+  { name: '9810', type: 'model' },
+  { name: '9812', type: 'model' },
+  { name: '9817', type: 'model' },
   { name: '9818', type: 'model' },
-  { name: '9004', type: 'model' },
+  { name: '9807', type: 'model' },
+  { name: '9819', type: 'model' },
+  { name: '9820', type: 'model' },
+  { name: 'D-02', type: 'model' },
+  { name: 'X-21', type: 'model' },
+  { name: '2186', type: 'model' },
+  { name: '2188', type: 'model' },
+  { name: '2291', type: 'model' },
+  { name: '2397', type: 'model' },
   { name: '2556', type: 'model' },
+  { name: '2573', type: 'model' },
+  { name: '2576', type: 'model' },
+  { name: '9001', type: 'model' },
+  { name: '9003', type: 'model' },
+  { name: '9004', type: 'model' },
+  { name: '9006', type: 'model' },
+  { name: '9007', type: 'model' },
+  { name: '9008', type: 'model' },
+  { name: '9009', type: 'model' },
 ];
 const colorSuggestions: Suggestion[] = [
   { name: '363-6', type: 'color' },
@@ -131,18 +172,25 @@ export function OrderForm({ initialData }: OrderFormProps) {
     setOrderItems(orderItems.map(item => {
       if (item.id === id) {
         let updatedItem = { ...item };
-
-        // Correctly handle string and number inputs based on field name
-        if (name === 'quantity' || name === 'unit_price') {
-          updatedItem[name] = Number(value);
-        } else {
-          updatedItem[name] = value;
+  
+        // 修复后的代码：使用 if/else if 链，针对每个属性分别赋值
+        if (name === 'quantity') {
+          updatedItem.quantity = Number(value);
+        } else if (name === 'unit_price') {
+          updatedItem.unit_price = Number(value);
+        } else if (name === 'product_model') {
+          updatedItem.product_model = String(value);
+        } else if (name === 'color') {
+          updatedItem.color = String(value);
+        } else if (name === 'specification') {
+          updatedItem.specification = String(value);
         }
-
-        // Prevent negative quantity
-        if (name === 'quantity' && Number(updatedItem.quantity) < 0) {
+  
+        // 防止负数数量
+        if (updatedItem.quantity && updatedItem.quantity < 0) {
           updatedItem.quantity = 0;
         }
+  
         return updatedItem;
       }
       return item;

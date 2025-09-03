@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, FilePlus, Pencil, DollarSign } from 'lucide-react';
+import { AlertCircle, FilePlus, Pencil, DollarSign, Truck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -242,23 +242,27 @@ export default function DashboardPage() {
               <CardHeader className="flex flex-col p-4 z-10">
                 <div className="flex justify-between items-center space-x-2">
                   <h3 className="text-lg font-bold">订单号: {orderGroup.order_number}</h3>
-                  <div className="flex-none flex items-center space-x-2">
-                    {/* 更新了链接，使用动态路径参数 */}
+                  <div className="flex-none flex items-center ml-4 space-x-2">
                     <Button
-                      asChild
                       variant="ghost"
                       size="sm"
+                      onClick={() => console.log(`Simulating Edit: ${orderGroup.order_number}`)}
                     >
-                      <Link href={`/dashboard/edit/${orderGroup.order_number}`}>
-                        <Pencil className="h-4 w-4" />
-                      </Link>
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => console.log(`Simulating new payment for order: ${orderGroup.order_number}`)}
+                      onClick={() => console.log(`Simulating Payment: ${orderGroup.order_number}`)}
                     >
                       <DollarSign className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => console.log(`Simulating Delivery: ${orderGroup.order_number}`)}
+                    >
+                      <Truck className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

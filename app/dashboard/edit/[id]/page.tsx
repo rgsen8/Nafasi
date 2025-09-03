@@ -14,11 +14,28 @@ interface OrderItem {
   order_date: string;
   customer_name: string;
   product_model: string;
-  color?: string;
-  specification?: string;
+  color: string | null;
+  specification: string | null;
   quantity: number | null;
   unit_price: number | null;
-  is_shipped?: boolean;
+  is_shipped: boolean | null;
+}
+
+// Define the type for the data returned directly from the Supabase query
+// This matches the nested structure from the join
+interface SupabaseResponseItem {
+  id: string;
+  order_number: string;
+  product_model: string;
+  color: string | null;
+  specification: string | null;
+  quantity: number | null;
+  unit_price: number | null;
+  is_shipped: boolean | null;
+  orders: {
+    order_date: string;
+    customer_name: string;
+  } | null;
 }
 
 // Define props for the Next.js page component
@@ -73,11 +90,12 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
 
         if (data && data.length > 0) {
           // Flatten the data to match the OrderItem interface
-          const transformedData: OrderItem[] = data.map((item: any) => ({
+          const transformedData: OrderItem[] = data.map((item: SupabaseResponseItem) => ({
             id: item.id,
             order_number: item.order_number,
-            order_date: item.orders.order_date,
-            customer_name: item.orders.customer_name,
+            // Access the nested 'orders' object safely, providing a fallback.
+            order_date: item.orders?.order_date || '',
+            customer_name: item.orders?.customer_name || '',
             product_model: item.product_model,
             color: item.color,
             specification: item.specification,

@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { AlertCircle, FilePlus, Pencil, DollarSign, Truck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase/client';
 
 // Define the type for the order item, aligned with types/interfaces.ts
@@ -33,10 +33,28 @@ interface OrderItem {
   is_shipped?: boolean;
 }
 
-// FIX: 更新接口，以匹配数据库中的 'amount' 字段
-interface Payment {
+// Interfaces for database-fetched data
+interface DbOrder {
   order_number: string;
-  amount: number;
+  order_date: string;
+  customer_name: string;
+  final_price?: number;
+}
+
+interface DbItem {
+  id: string;
+  order_number: string;
+  product_model: string;
+  color?: string;
+  specification?: string;
+  quantity?: number;
+  unit_price?: number;
+  is_shipped?: boolean;
+}
+
+interface DbPayment {
+  order_number: string;
+  amount?: number;
 }
 
 // Define the type for the grouped order
@@ -64,12 +82,12 @@ export default function DashboardPage() {
   /**
    * 将从多个 Supabase 表中获取的数据进行分组和整合。
    *
-   * @param {any[]} ordersData - 来自 `orders` 表的数据
-   * @param {any[]} itemsData - 来自 `items` 表的数据
-   * @param {any[]} paymentsData - 来自 `payments` 表的数据
+   * @param {DbOrder[]} ordersData - 来自 `orders` 表的数据
+   * @param {DbItem[]} itemsData - 来自 `items` 表的数据
+   * @param {DbPayment[]} paymentsData - 来自 `payments` 表的数据
    * @returns {GroupedOrder[]} 整合后的分组订单列表
    */
-  const groupDataAndCalculate = (ordersData: any[], itemsData: any[], paymentsData: any[]): GroupedOrder[] => {
+  const groupDataAndCalculate = (ordersData: DbOrder[], itemsData: DbItem[], paymentsData: DbPayment[]): GroupedOrder[] => {
     // 按日期对原始订单数据进行排序，以确保正确的下单次数
     const sortedOrdersData = [...ordersData].sort((a, b) => {
       return new Date(a.order_date).getTime() - new Date(b.order_date).getTime();
@@ -93,7 +111,7 @@ export default function DashboardPage() {
         is_settled: false,
         items: [],
         total_order_quantity: 0,
-        final_price: Number(order.final_price) ?? 0, // 修正：直接从 orders 表中读取 final_price
+        final_price: Number(order.final_price) ?? 0,
         paid_price: 0,
         receivable_price: 0,
         is_completed: false,
@@ -104,9 +122,12 @@ export default function DashboardPage() {
     itemsData.forEach(item => {
       const orderGroup = groupedMap.get(item.order_number);
       if (orderGroup) {
-        // 修正：计算单个订单明细的合计价格，而不是从数据库读取
         const itemTotalPrice = (Number(item.quantity) ?? 0) * (Number(item.unit_price) ?? 0);
-        orderGroup.items.push({ ...item, total_price: itemTotalPrice }); // 覆盖或添加 total_price 字段
+        orderGroup.items.push({
+          ...item, quantity: item.quantity ?? 0, unit_price: item.unit_price ?? 0, total_price: itemTotalPrice,
+          order_date: '',
+          customer_name: ''
+        });
         orderGroup.total_order_quantity += Number(item.quantity) ?? 0;
       }
     });
@@ -115,7 +136,6 @@ export default function DashboardPage() {
     paymentsData.forEach(payment => {
       const orderGroup = groupedMap.get(payment.order_number);
       if (orderGroup) {
-        // FIX: 将 paid_price 改为 amount
         orderGroup.paid_price += Number(payment.amount) ?? 0;
       }
     });
@@ -176,27 +196,13 @@ export default function DashboardPage() {
       }
 
       // Step 4: Group and process the data.
-      const groupedData = groupDataAndCalculate(ordersData, itemsData, paymentsData);
+      const groupedData = groupDataAndCalculate(ordersData as DbOrder[], itemsData as DbItem[], paymentsData as DbPayment[]);
       setOrders(groupedData);
       setLoading(false);
     };
 
     fetchOrders();
   }, [searchTerm]);
-
-  const handleDelete = async (orderNumber: string) => {
-    // This function is kept for completeness but not used due to the button's removal.
-    // 更好的做法是使用一个模态框而不是 window.confirm
-    if (window.confirm(`确定要删除订单号为 ${orderNumber} 的所有记录吗？`)) {
-      const { error: dbError } = await supabase.from('orders').delete().eq('order_number', orderNumber);
-
-      if (dbError) {
-        setError('删除失败：' + dbError.message);
-      } else {
-        setOrders(orders.filter(order => order.order_number !== orderNumber));
-      }
-    }
-  };
 
   return (
     <div className="container mx-auto py-8">

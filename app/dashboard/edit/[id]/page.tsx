@@ -6,7 +6,6 @@ import { OrderForm } from '@/components/order-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 // Define the type for order items, matching the order-form component
 interface OrderItem {
@@ -33,8 +32,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
   const [initialData, setInitialData] = useState<OrderItem[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-  
+
   // Use the ID from the URL to fetch data
   const orderNumber = params.id;
 
@@ -75,7 +73,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
 
         if (data && data.length > 0) {
           // Flatten the data to match the OrderItem interface
-          const transformedData: OrderItem[] = data.map(item => ({
+          const transformedData: OrderItem[] = data.map((item: any) => ({
             id: item.id,
             order_number: item.order_number,
             order_date: item.orders.order_date,
@@ -91,9 +89,15 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
         } else {
           setError('未找到此订单的数据。');
         }
-      } catch (err: any) {
-        console.error('获取订单数据时发生错误:', err.message);
-        setError('加载订单数据失败，请重试。');
+      } catch (err: unknown) {
+        let errorMessage = '加载订单数据失败，请重试。';
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (typeof err === 'string') {
+          errorMessage = err;
+        }
+        console.error('获取订单数据时发生错误:', errorMessage);
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }

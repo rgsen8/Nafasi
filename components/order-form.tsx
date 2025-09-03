@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -171,8 +171,9 @@ export function OrderForm({ initialData }: OrderFormProps) {
   const handleItemChange = (id: string, name: string, value: string | number) => {
     setOrderItems(orderItems.map(item => {
       if (item.id === id) {
-        let updatedItem = { ...item };
-  
+        // Fix: Changed 'let' to 'const' as the variable is not reassigned.
+        const updatedItem = { ...item };
+ 
         // 修复后的代码：使用 if/else if 链，针对每个属性分别赋值
         if (name === 'quantity') {
           updatedItem.quantity = Number(value);
@@ -185,12 +186,12 @@ export function OrderForm({ initialData }: OrderFormProps) {
         } else if (name === 'specification') {
           updatedItem.specification = String(value);
         }
-  
+ 
         // 防止负数数量
         if (updatedItem.quantity && updatedItem.quantity < 0) {
           updatedItem.quantity = 0;
         }
-  
+ 
         return updatedItem;
       }
       return item;
@@ -271,7 +272,6 @@ export function OrderForm({ initialData }: OrderFormProps) {
 
     // 关键调试：打印出即将发送的订单号，以验证是否正确
     console.log('正在提交的订单号:', fullOrderNumber);
-    let formError = null;
 
     try {
       if (initialData) {
@@ -330,8 +330,8 @@ export function OrderForm({ initialData }: OrderFormProps) {
 
       router.push('/dashboard');
       router.refresh();
-    } catch (err: any) {
-      console.error("Submission error:", err.message);
+    } catch (err: unknown) { // Fix: Changed 'any' to 'unknown' for better type safety.
+      console.error("Submission error:", err instanceof Error ? err.message : "提交时发生未知错误。");
       setError(err instanceof Error ? err.message : "提交时发生未知错误。请检查控制台以获取更多信息。");
       setIsLoading(false);
     }
